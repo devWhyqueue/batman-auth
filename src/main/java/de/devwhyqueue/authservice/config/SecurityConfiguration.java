@@ -1,4 +1,4 @@
-package de.devwhyqueue.authservice.security;
+package de.devwhyqueue.authservice.config;
 
 import de.devwhyqueue.authservice.security.jwt.JWTConfigurer;
 import de.devwhyqueue.authservice.security.jwt.TokenProvider;
@@ -38,6 +38,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .apply(securityConfigurerAdapter());
     // @formatter:on
   }
+
 
   private JWTConfigurer securityConfigurerAdapter() {
     return new JWTConfigurer(tokenProvider);

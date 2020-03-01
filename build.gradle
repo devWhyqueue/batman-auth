@@ -31,7 +31,9 @@ dependencies {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
     testImplementation 'org.springframework.security:spring-security-test'
-    runtime group: 'com.h2database', name: 'h2'
+
+    runtimeOnly 'com.h2database:h2'
+    implementation 'org.postgresql:postgresql'
 }
 
 test {

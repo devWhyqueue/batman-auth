@@ -47,7 +47,7 @@ public class UserResource {
   }
 
   @PostMapping("/users")
-  public ResponseEntity<User> createUser(@RequestBody User user) throws URISyntaxException {
+  public ResponseEntity<User> createUser(@Valid @RequestBody User user) throws URISyntaxException {
     log.debug("REST request to save User : {}", user);
 
     if (user.getId() != null) {

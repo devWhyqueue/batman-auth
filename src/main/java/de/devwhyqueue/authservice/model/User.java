@@ -10,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -18,15 +17,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Entity
+@Entity(name = "batman_user")
 @Getter
 @Setter
 @ToString
 public class User {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-  @SequenceGenerator(name = "sequenceGenerator")
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
   @Email
