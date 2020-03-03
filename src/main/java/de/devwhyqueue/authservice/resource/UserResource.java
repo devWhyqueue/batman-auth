@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,8 +36,20 @@ public class UserResource {
     this.userRepository = userRepository;
   }
 
+  @GetMapping("/users/{id}")
+  public ResponseEntity<User> getBasicUserInfoById(@PathVariable Long id) {
+    log.debug("REST request to get user with id {}", id);
+    return this.userRepository.findById(id)
+        .map(user -> {
+          user.setEmail("[PROTECTED]");
+          user.setPassword("[PROTECTED]");
+          return ResponseEntity.ok(user);
+        })
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+  }
+
   @GetMapping("/users/self")
-  public ResponseEntity<User> getUser() {
+  public ResponseEntity<User> getOwnUser() {
     log.debug("REST request to get own user");
     return userService.getUserWithAuthorities()
         .map(user -> {
