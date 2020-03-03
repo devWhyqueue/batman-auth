@@ -33,6 +33,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .authorizeRequests()
         .antMatchers("/authenticate").permitAll()
         .antMatchers("/register").permitAll()
+        .antMatchers("/users/{id}").permitAll()
         .anyRequest().authenticated()
         .and()
         .apply(securityConfigurerAdapter());
