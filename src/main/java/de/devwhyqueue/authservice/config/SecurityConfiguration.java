@@ -34,8 +34,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()
         .authorizeRequests()
         .antMatchers(HttpMethod.POST,"/users").permitAll()
-        .antMatchers("/authenticate").permitAll()
-        .antMatchers("/users/{id}").permitAll()
+        .antMatchers(HttpMethod.POST,"/authenticate").permitAll()
+        .antMatchers(HttpMethod.GET, "/users/{id}").permitAll()
         .anyRequest().authenticated()
         .and()
         .apply(securityConfigurerAdapter());
@@ -46,7 +46,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
   public void configure(WebSecurity web) {
     web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
   }
-  
+
   private JWTConfigurer securityConfigurerAdapter() {
     return new JWTConfigurer(tokenProvider);
   }

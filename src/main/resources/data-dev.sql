@@ -1,6 +1,6 @@
-DELETE FROM User_Authority;
-DELETE FROM Batman_User;
-DELETE FROM Authority;
+DELETE FROM User_Authority WHERE true;
+DELETE FROM Batman_User WHERE true;
+DELETE FROM Authority WHERE true;
 
 INSERT INTO Authority VALUES ('ROLE_USER');
 INSERT INTO Authority VALUES ('ROLE_ANONYMOUS');
