@@ -1,4 +1,4 @@
-create sequence hibernate_sequence start 1 increment 1;
+create sequence hibernate_sequence start 20 increment 1;
 create table authority (name varchar(50) not null, primary key (name));
 create table batman_user (id int8 not null, club varchar(254), email varchar(50), first_name varchar(50), gender int4 not null, last_name varchar(50), password_hash varchar(60) not null, primary key (id));
 create table user_authority (user_id int8 not null, authority_name varchar(50) not null, primary key (user_id, authority_name));
