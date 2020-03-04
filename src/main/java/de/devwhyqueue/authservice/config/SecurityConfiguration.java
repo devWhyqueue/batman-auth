@@ -4,6 +4,7 @@ import de.devwhyqueue.authservice.security.jwt.JWTConfigurer;
 import de.devwhyqueue.authservice.security.jwt.TokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,8 +32,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
         .authorizeRequests()
+        .antMatchers(HttpMethod.POST,"/users").permitAll()
         .antMatchers("/authenticate").permitAll()
-        .antMatchers("/register").permitAll()
         .antMatchers("/users/{id}").permitAll()
         .anyRequest().authenticated()
         .and()

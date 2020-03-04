@@ -27,6 +27,7 @@ public class User {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
+  @NotNull
   @Email
   @Size(min = 5, max = 50)
   @Column(unique = true)
@@ -37,10 +38,12 @@ public class User {
   @Column(name = "password_hash", length = 60, nullable = false)
   private String password;
 
+  @NotNull
   @Size(max = 50)
   @Column(length = 50)
   private String firstName;
 
+  @NotNull
   @Size(max = 50)
   @Column(length = 50)
   private String lastName;
@@ -48,6 +51,7 @@ public class User {
   @NotNull
   private Gender gender;
 
+  @NotNull
   @Size(min = 5, max = 254)
   private String club;
 
