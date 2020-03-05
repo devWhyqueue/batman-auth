@@ -39,20 +39,20 @@ public class User {
   private String password;
 
   @NotNull
-  @Size(max = 50)
+  @Size(min = 1, max = 50)
   @Column(length = 50)
   private String firstName;
 
   @NotNull
   @Size(max = 50)
-  @Column(length = 50)
+  @Size(min = 1, max = 50)
   private String lastName;
 
   @NotNull
   private Gender gender;
 
   @NotNull
-  @Size(min = 5, max = 254)
+  @Size(min = 1, max = 50)
   private String club;
 
   @ManyToMany

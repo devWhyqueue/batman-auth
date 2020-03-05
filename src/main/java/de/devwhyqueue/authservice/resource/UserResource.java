@@ -93,7 +93,6 @@ public class UserResource {
     }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
   }
 
-  // TODO: Cleanup
   @DeleteMapping("/users/self")
   @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
   public ResponseEntity<Void> deleteUser() {
