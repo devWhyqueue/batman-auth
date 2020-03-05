@@ -19,3 +19,5 @@ INSERT INTO User_Authority (user_id, authority_name) VALUES (3, 'ROLE_USER');
 INSERT INTO User_Authority (user_id, authority_name) VALUES (4, 'ROLE_USER');
 INSERT INTO User_Authority (user_id, authority_name) VALUES (9, 'ROLE_USER');
 INSERT INTO User_Authority (user_id, authority_name) VALUES (10, 'ROLE_USER');
+
+ALTER SEQUENCE Hibernate_Sequence RESTART WITH 20;

@@ -74,7 +74,7 @@ public class UserResource {
     }
   }
 
-  @PutMapping("/users")
+  @PutMapping("/users/self")
   @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
   public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
     log.debug("REST request to update User : {}", user);
