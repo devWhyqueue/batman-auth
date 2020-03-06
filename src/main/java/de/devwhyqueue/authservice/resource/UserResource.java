@@ -6,6 +6,7 @@ import de.devwhyqueue.authservice.repository.UserRepository;
 import de.devwhyqueue.authservice.security.AuthoritiesConstants;
 import de.devwhyqueue.authservice.service.RemoteMailService;
 import de.devwhyqueue.authservice.service.UserService;
+import de.devwhyqueue.authservice.service.exception.EmailAlreadyUsedException;
 import de.devwhyqueue.authservice.service.exception.MailException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,7 +33,7 @@ public class UserResource {
 
   private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
-  @Value("server.url")
+  @Value("${webapp.url}")
   private String serverUrl;
 
   private final UserService userService;
@@ -75,26 +76,26 @@ public class UserResource {
     log.debug("REST request to save User : {}", user);
 
     if (user.getId() != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New users cannot have an id!");
       // Lowercase the user login before comparing with database
-    } else if (userRepository.findOneByEmailIgnoreCase(user.getEmail()).isPresent()) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already in use!");
-    } else {
+    }
+
+    try {
       User newUser = userService.registerUser(user);
-      try {
-        this.remoteMailService.sendActivationMail(
-            new MailData(newUser.getEmail(), newUser.getFirstName(), this.serverUrl,
-                user.getActivationKey()));
-      } catch (MailException e) {
-        throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-            "Could not send activation mail!");
-      }
+      this.remoteMailService.sendActivationMail(
+          new MailData(newUser.getEmail(), newUser.getFirstName(), this.serverUrl,
+              user.getActivationKey()));
       return ResponseEntity.created(new URI("/api/users/" + newUser.getEmail())).body(newUser);
+    } catch (EmailAlreadyUsedException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use!");
+    } catch (MailException e) {
+      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+          "Could not send activation mail!");
     }
   }
 
   @GetMapping("/users/activate")
-  public void activateUser(@RequestParam String key) throws URISyntaxException {
+  public void activateUser(@RequestParam String key) {
     Optional<User> user = userService.activateRegistration(key);
     if (!user.isPresent()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND);

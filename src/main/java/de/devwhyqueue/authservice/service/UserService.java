@@ -7,6 +7,7 @@ import de.devwhyqueue.authservice.repository.AuthorityRepository;
 import de.devwhyqueue.authservice.repository.UserRepository;
 import de.devwhyqueue.authservice.security.AuthoritiesConstants;
 import de.devwhyqueue.authservice.security.SecurityUtils;
+import de.devwhyqueue.authservice.service.exception.EmailAlreadyUsedException;
 import de.devwhyqueue.authservice.util.RandomUtil;
 import java.util.HashSet;
 import java.util.Optional;
@@ -38,11 +39,20 @@ public class UserService {
 
   @Transactional(readOnly = true)
   public Optional<User> getUserWithAuthorities() {
-    return SecurityUtils.getCurrentUserEmail().flatMap(userRepository::findOneWithAuthoritiesByEmailIgnoreCase);
+    return SecurityUtils.getCurrentUserEmail()
+        .flatMap(userRepository::findOneWithAuthoritiesByEmailIgnoreCase);
   }
 
 
-  public User registerUser(User user) {
+  public User registerUser(User user) throws EmailAlreadyUsedException {
+    Optional<User> existingUser = this.userRepository.findOneByEmailIgnoreCase(user.getEmail());
+    if (existingUser.isPresent()) {
+      boolean removed = this.removeNonActivatedUser(existingUser.get());
+      if (!removed) {
+        throw new EmailAlreadyUsedException();
+      }
+    }
+
     String encryptedPassword = passwordEncoder.encode(user.getPassword());
     user.setPassword(encryptedPassword);
     // new user is not active
@@ -59,6 +69,16 @@ public class UserService {
     return new User(user.getId(), user.getEmail(), "[PROTECTED]", user.getFirstName(),
         user.getLastName(), user.getGender(), user.getClub(), user.getAuthorities());
   }
+
+  private boolean removeNonActivatedUser(User existingUser) {
+    if (existingUser.isActivated()) {
+      return false;
+    }
+    userRepository.delete(existingUser);
+    userRepository.flush();
+    return true;
+  }
+
 
   public Optional<User> activateRegistration(String key) {
     log.debug("Activating user for activation key {}", key);

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -33,9 +32,6 @@ public class RemoteMailService {
           mailServer + "users/activate", HttpMethod.POST, new HttpEntity<>(mailData),
           new ParameterizedTypeReference<>() {
           });
-      if (response.getStatusCode() != HttpStatus.OK) {
-        throw new MailException();
-      }
       return response;
     } catch (RestClientException ex) {
       log.error("Could not send activation mail via {}", mailServer);
