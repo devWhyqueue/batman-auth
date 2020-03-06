@@ -7,6 +7,7 @@ import de.devwhyqueue.authservice.repository.AuthorityRepository;
 import de.devwhyqueue.authservice.repository.UserRepository;
 import de.devwhyqueue.authservice.security.AuthoritiesConstants;
 import de.devwhyqueue.authservice.security.SecurityUtils;
+import de.devwhyqueue.authservice.util.RandomUtil;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -44,6 +45,10 @@ public class UserService {
   public User registerUser(User user) {
     String encryptedPassword = passwordEncoder.encode(user.getPassword());
     user.setPassword(encryptedPassword);
+    // new user is not active
+    user.setActivated(false);
+    // new user gets registration key
+    user.setActivationKey(RandomUtil.generateActivationKey());
 
     Set<Authority> authorities = new HashSet<>();
     authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
@@ -51,10 +56,24 @@ public class UserService {
     userRepository.save(user);
     log.debug("Created Information for User: {}", user);
 
-    return new User(user.getId(), user.getEmail(), "[PROTECTED]", user.getFirstName(), user.getLastName(), user.getGender(), user.getClub(), user.getAuthorities());
+    return new User(user.getId(), user.getEmail(), "[PROTECTED]", user.getFirstName(),
+        user.getLastName(), user.getGender(), user.getClub(), user.getAuthorities());
   }
 
-  public Optional<User> updateOwnUser(String email, String firstName, String lastName, Gender gender, String club) {
+  public Optional<User> activateRegistration(String key) {
+    log.debug("Activating user for activation key {}", key);
+    return userRepository.findOneByActivationKey(key)
+        .map(user -> {
+          // activate given user for the registration key.
+          user.setActivated(true);
+          user.setActivationKey(null);
+          log.debug("Activated user: {}", user);
+          return user;
+        });
+  }
+
+  public Optional<User> updateOwnUser(String email, String firstName, String lastName,
+      Gender gender, String club) {
     return Optional.of(SecurityUtils.getCurrentUserEmail()
         .flatMap(userRepository::findOneByEmailIgnoreCase))
         .filter(Optional::isPresent)

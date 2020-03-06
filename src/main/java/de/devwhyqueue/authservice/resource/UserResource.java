@@ -1,15 +1,19 @@
 package de.devwhyqueue.authservice.resource;
 
+import de.devwhyqueue.authservice.model.MailData;
 import de.devwhyqueue.authservice.model.User;
 import de.devwhyqueue.authservice.repository.UserRepository;
 import de.devwhyqueue.authservice.security.AuthoritiesConstants;
+import de.devwhyqueue.authservice.service.RemoteMailService;
 import de.devwhyqueue.authservice.service.UserService;
+import de.devwhyqueue.authservice.service.exception.MailException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,12 +32,18 @@ public class UserResource {
 
   private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
+  @Value("server.url")
+  private String serverUrl;
+
   private final UserService userService;
+  private final RemoteMailService remoteMailService;
   private final UserRepository userRepository;
 
   public UserResource(UserService userService,
+      RemoteMailService remoteMailService,
       UserRepository userRepository) {
     this.userService = userService;
+    this.remoteMailService = remoteMailService;
     this.userRepository = userRepository;
   }
 
@@ -70,7 +81,23 @@ public class UserResource {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already in use!");
     } else {
       User newUser = userService.registerUser(user);
+      try {
+        this.remoteMailService.sendActivationMail(
+            new MailData(newUser.getEmail(), newUser.getFirstName(), this.serverUrl,
+                user.getActivationKey()));
+      } catch (MailException e) {
+        throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+            "Could not send activation mail!");
+      }
       return ResponseEntity.created(new URI("/api/users/" + newUser.getEmail())).body(newUser);
+    }
+  }
+
+  @GetMapping("/users/activate")
+  public void activateUser(@RequestParam String key) throws URISyntaxException {
+    Optional<User> user = userService.activateRegistration(key);
+    if (!user.isPresent()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
   }
 

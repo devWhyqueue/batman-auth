@@ -1,5 +1,6 @@
 package de.devwhyqueue.authservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.Column;
@@ -37,6 +38,14 @@ public class User {
   @Size(min = 5, max = 60)
   @Column(name = "password_hash", length = 60, nullable = false)
   private String password;
+
+  @NotNull
+  private boolean activated = false;
+
+  @Size(max = 20)
+  @Column(length = 20)
+  @JsonIgnore
+  private String activationKey;
 
   @NotNull
   @Size(min = 1, max = 50)
