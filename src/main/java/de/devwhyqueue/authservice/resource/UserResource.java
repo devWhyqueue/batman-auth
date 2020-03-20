@@ -122,7 +122,7 @@ public class UserResource {
   }
 
   @DeleteMapping("/users/self")
-  @PreAuthorize("hasRole(\"" + AuthoritiesConstants.USER + "\")")
+  @PreAuthorize("hasRole(\"" + AuthoritiesConstants.SYSTEM + "\")")
   public ResponseEntity<Void> deleteUser() {
     log.debug("REST request to delete own user");
     userService.deleteUser();
