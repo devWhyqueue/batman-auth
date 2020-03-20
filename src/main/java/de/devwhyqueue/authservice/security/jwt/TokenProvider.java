@@ -1,5 +1,6 @@
 package de.devwhyqueue.authservice.security.jwt;
 
+import de.devwhyqueue.authservice.security.AuthoritiesConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -11,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -109,25 +109,30 @@ public class TokenProvider implements InitializingBean {
 
     @Bean
     @RequestScope
-    public RestTemplate restTemplateWithToken(HttpServletRequest inReq) {
-        // retrieve the auth header from incoming request
-        final String authHeader =
-            inReq.getHeader(HttpHeaders.AUTHORIZATION);
+    public RestTemplate restTemplateWithSystemToken() {
+        String jwt = createSystemToken();
         SimpleClientHttpRequestFactory httpRequestFactory = new SimpleClientHttpRequestFactory();
-        httpRequestFactory.setConnectTimeout(0);
+        httpRequestFactory.setConnectTimeout(3000);
         final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-        // add a token if an incoming auth header exists, only
-        if (authHeader != null && !authHeader.isEmpty()) {
-            // since the header should be added to each outgoing request,
-            // add an interceptor that handles this.
-            restTemplate.getInterceptors().add(
-                (outReq, bytes, clientHttpReqExec) -> {
-                    outReq.getHeaders().set(
-                        HttpHeaders.AUTHORIZATION, authHeader
-                    );
-                    return clientHttpReqExec.execute(outReq, bytes);
-                });
-        }
+        restTemplate.getInterceptors().add(
+            (outReq, bytes, clientHttpReqExec) -> {
+                outReq.getHeaders().set(
+                    HttpHeaders.AUTHORIZATION, "Bearer " + jwt
+                );
+                return clientHttpReqExec.execute(outReq, bytes);
+            });
         return restTemplate;
+    }
+
+    private String createSystemToken() {
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + this.tokenValidityInMilliseconds);
+
+        return Jwts.builder()
+            .setSubject("auth-service@batman.de")
+            .claim(AUTHORITIES_KEY, AuthoritiesConstants.SYSTEM)
+            .signWith(key, SignatureAlgorithm.HS512)
+            .setExpiration(validity)
+            .compact();
     }
 }
